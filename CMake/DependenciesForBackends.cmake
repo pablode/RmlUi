@@ -9,6 +9,11 @@
 
 # SDL 2 and 3 common setup
 if(RMLUI_BACKEND MATCHES "^SDL")
+	# The WGPU backend is implemented directly on top of the SDL3 API and sdl3webgpu.
+	if(RMLUI_BACKEND STREQUAL "SDL_WGPU")
+		set(RMLUI_SDL_VERSION_MAJOR 3 CACHE STRING "Major version of SDL to search for, or empty for automatic search." FORCE)
+	endif()
+
 	set(RMLUI_SDL_VERSION_MAJOR "" CACHE STRING "Major version of SDL to search for, or empty for automatic search.")
 	mark_as_advanced(RMLUI_SDL_VERSION_MAJOR)
 

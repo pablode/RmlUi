@@ -5,7 +5,11 @@
 #include <RmlUi/Core/SystemInterface.h>
 #include <RmlUi/Core/Types.h>
 
+#include <functional>
+
 using KeyDownCallback = bool (*)(Rml::Context* context, Rml::Input::KeyIdentifier key, int key_modifier, float native_dp_ratio, bool priority);
+using RawKeyDownCallback = std::function<bool(int keycode, int scancode, int key_modifier)>;
+using RawTextEditingCallback = std::function<bool(const char* text)>;
 
 /**
     This interface serves as a basic abstraction over the various backends included with RmlUi. It is mainly intended as an example to get something
@@ -30,6 +34,10 @@ Rml::RenderInterface* GetRenderInterface();
 // Polls and processes events from the current platform, and applies any relevant events to the provided RmlUi context and the key down callback.
 // @return False to indicate that the application should be closed.
 bool ProcessEvents(Rml::Context* context, KeyDownCallback key_down_callback = nullptr, bool power_save = false);
+// Sets a callback invoked for raw key-down events before they are passed to RmlUi. Return true to consume the event, including its text input.
+void SetRawKeyDownCallback(RawKeyDownCallback callback);
+// Sets a callback invoked for IME text-editing events before they are passed to RmlUi. Return true to consume the event.
+void SetRawTextEditingCallback(RawTextEditingCallback callback);
 // Request application closure during the next event processing call.
 void RequestExit();
 

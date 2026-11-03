@@ -227,6 +227,35 @@ target_sources(rmlui_backend_SDL_GPU INTERFACE
 )
 target_link_libraries(rmlui_backend_SDL_GPU INTERFACE rmlui_backend_common_headers SDL::SDL SDL_image::SDL_image)
 
+set(RMLUI_WGPU_TARGET "webgpu" CACHE STRING "Target providing the WebGPU headers and library for the SDL_WGPU backend.")
+set(RMLUI_SDL3WEBGPU_TARGET "sdl3webgpu" CACHE STRING "Target providing SDL_GetWGPUSurface for the SDL_WGPU backend.")
+mark_as_advanced(RMLUI_WGPU_TARGET RMLUI_SDL3WEBGPU_TARGET)
+
+if(RMLUI_BACKEND STREQUAL "SDL_WGPU")
+	if(NOT TARGET ${RMLUI_WGPU_TARGET})
+		message(FATAL_ERROR
+			"The SDL_WGPU backend requires a WebGPU target named '${RMLUI_WGPU_TARGET}'. "
+			"Set RMLUI_WGPU_TARGET to the target providing the WebGPU headers and library."
+		)
+	endif()
+	if(NOT TARGET ${RMLUI_SDL3WEBGPU_TARGET})
+		message(FATAL_ERROR
+			"The SDL_WGPU backend requires the sdl3webgpu target '${RMLUI_SDL3WEBGPU_TARGET}'. "
+			"Set RMLUI_SDL3WEBGPU_TARGET to the target providing SDL_GetWGPUSurface."
+		)
+	endif()
+endif()
+
+add_library(rmlui_backend_SDL_WGPU INTERFACE)
+target_sources(rmlui_backend_SDL_WGPU INTERFACE
+	"${CMAKE_CURRENT_LIST_DIR}/RmlUi_Platform_SDL.cpp"
+	"${CMAKE_CURRENT_LIST_DIR}/RmlUi_Renderer_WGPU.cpp"
+	"${CMAKE_CURRENT_LIST_DIR}/RmlUi_Backend_SDL_WGPU.cpp"
+	"${CMAKE_CURRENT_LIST_DIR}/RmlUi_Platform_SDL.h"
+	"${CMAKE_CURRENT_LIST_DIR}/RmlUi_Renderer_WGPU.h"
+)
+target_link_libraries(rmlui_backend_SDL_WGPU INTERFACE rmlui_backend_common_headers SDL::SDL ${RMLUI_WGPU_TARGET} ${RMLUI_SDL3WEBGPU_TARGET})
+
 add_library(rmlui_backend_SFML_GL2 INTERFACE)
 target_sources(rmlui_backend_SFML_GL2 INTERFACE
 	"${CMAKE_CURRENT_LIST_DIR}/RmlUi_Platform_SFML.cpp"
