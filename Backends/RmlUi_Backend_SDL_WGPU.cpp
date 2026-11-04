@@ -216,7 +216,17 @@ bool Backend::Initialize(const char* window_name, int width, int height, bool al
 	WGPURequestDeviceCallbackInfo device_callback{};
 	device_callback.callback = OnRequestDevice;
 	device_callback.userdata1 = &device_result;
-	wgpuAdapterRequestDevice(adapter_result.adapter, nullptr, device_callback);
+
+	WGPUFeatureName required_features[1];
+	WGPUDeviceDescriptor device_descriptor{};
+	WGPUFeatureName polygon_mode_line = static_cast<WGPUFeatureName>(WGPUNativeFeature_PolygonModeLine);
+	if (wgpuAdapterHasFeature(adapter_result.adapter, polygon_mode_line))
+	{
+		required_features[0] = polygon_mode_line;
+		device_descriptor.requiredFeatureCount = 1;
+		device_descriptor.requiredFeatures = required_features;
+	}
+	wgpuAdapterRequestDevice(adapter_result.adapter, &device_descriptor, device_callback);
 
 	if (!device_result.device)
 	{
