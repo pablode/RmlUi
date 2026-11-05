@@ -964,12 +964,13 @@ WGPURenderPipeline RenderInterface_WGPU::ChooseGeometryPipeline(WGPURenderPipeli
 	return clip_mask_enabled ? clipped : normal;
 }
 
-void RenderInterface_WGPU::BeginFrame(WGPUCommandEncoder encoder, WGPUTextureView surface_view, uint32_t width, uint32_t height)
+void RenderInterface_WGPU::BeginFrame(WGPUCommandEncoder encoder, WGPUTexture surface_texture, WGPUTextureView surface_view, uint32_t width, uint32_t height)
 {
 	EndPass();
 	ReleasePendingResources();
 
 	command_encoder = encoder;
+	this->surface_texture = surface_texture;
 	viewport_width = width;
 	viewport_height = height;
 
@@ -1035,7 +1036,7 @@ void RenderInterface_WGPU::EndFrame()
 	if (command_encoder && surface_target.view && root_target.view && viewport_width > 0 && viewport_height > 0)
 	{
 		if (background_callback)
-			background_callback(command_encoder, surface_target.view, viewport_width, viewport_height);
+			background_callback(command_encoder, surface_texture, surface_target.view, viewport_width, viewport_height);
 
 		// The UI is rendered into a transparent offscreen root layer so that a background callback can draw behind it, and so that
 		// layers can sample it (e.g. for backdrop filters). Composite it over the background at the end of the frame.

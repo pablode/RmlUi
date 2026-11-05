@@ -77,6 +77,11 @@ void OnWGPULog(WGPULogLevel level, WGPUStringView message, void* /*userdata*/)
 	std::fprintf(stderr, "[wgpu] [%s] %.*s\n", level_str, int(message.length), message.data);
 }
 
+void OnUncapturedError(WGPUDevice const* /*device*/, WGPUErrorType type, WGPUStringView message, void* /*userdata1*/, void* /*userdata2*/)
+{
+	std::fprintf(stderr, "[wgpu] Uncaptured error (%d): %.*s\n", int(type), int(message.length), message.data);
+}
+
 struct AdapterRequestResult {
 	WGPUAdapter adapter = nullptr;
 };
@@ -219,6 +224,7 @@ bool Backend::Initialize(const char* window_name, int width, int height, bool al
 
 	WGPUFeatureName required_features[1];
 	WGPUDeviceDescriptor device_descriptor{};
+	device_descriptor.uncapturedErrorCallbackInfo.callback = OnUncapturedError;
 	WGPUFeatureName polygon_mode_line = static_cast<WGPUFeatureName>(WGPUNativeFeature_PolygonModeLine);
 	if (wgpuAdapterHasFeature(adapter_result.adapter, polygon_mode_line))
 	{
@@ -273,7 +279,7 @@ bool Backend::Initialize(const char* window_name, int width, int height, bool al
 	WGPUSurfaceConfiguration config{};
 	config.device = device_result.device;
 	config.format = surface_format;
-	config.usage = WGPUTextureUsage_RenderAttachment;
+	config.usage = WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_CopySrc;
 	config.presentMode = WGPUPresentMode_Fifo;
 	config.alphaMode = capabilities.alphaModes[0];
 
@@ -566,7 +572,7 @@ void Backend::BeginFrame()
 	data->command_encoder = command_encoder;
 	data->frame_ready = true;
 
-	data->render_interface.BeginFrame(command_encoder, surface_view, data->config.width, data->config.height);
+	data->render_interface.BeginFrame(command_encoder, surface_texture.texture, surface_view, data->config.width, data->config.height);
 }
 
 void Backend::PresentFrame()

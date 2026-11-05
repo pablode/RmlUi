@@ -24,7 +24,7 @@
  */
 class RenderInterface_WGPU : public Rml::RenderInterface {
 public:
-	using BackgroundCallback = std::function<void(WGPUCommandEncoder command_encoder, WGPUTextureView surface_view, uint32_t width, uint32_t height)>;
+	using BackgroundCallback = std::function<void(WGPUCommandEncoder command_encoder, WGPUTexture surface_texture, WGPUTextureView surface_view, uint32_t width, uint32_t height)>;
 
 	RenderInterface_WGPU(WGPUDevice device, WGPUQueue queue, WGPUTextureFormat target_format);
 	~RenderInterface_WGPU() override;
@@ -41,7 +41,7 @@ public:
 
 	/// Begins a frame by starting a render pass on an offscreen root layer. The renderer creates and manages the render passes, the
 	/// backend only owns the command encoder.
-	void BeginFrame(WGPUCommandEncoder command_encoder, WGPUTextureView surface_view, uint32_t width, uint32_t height);
+	void BeginFrame(WGPUCommandEncoder command_encoder, WGPUTexture surface_texture, WGPUTextureView surface_view, uint32_t width, uint32_t height);
 	/// Ends the current render pass and composites the offscreen root layer to the swapchain surface. Does not submit the frame.
 	void EndFrame();
 
@@ -187,6 +187,7 @@ private:
 
 	WGPUCommandEncoder command_encoder = nullptr;
 	WGPURenderPassEncoder render_pass = nullptr;
+	WGPUTexture surface_texture = nullptr;
 
 	RenderTarget surface_target;
 	RenderTarget root_target;
