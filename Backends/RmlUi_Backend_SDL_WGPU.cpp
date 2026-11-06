@@ -222,16 +222,25 @@ bool Backend::Initialize(const char* window_name, int width, int height, bool al
 	device_callback.callback = OnRequestDevice;
 	device_callback.userdata1 = &device_result;
 
-	WGPUFeatureName required_features[1];
+	WGPUFeatureName required_features[3];
 	WGPUDeviceDescriptor device_descriptor{};
 	device_descriptor.uncapturedErrorCallbackInfo.callback = OnUncapturedError;
+	uint32_t required_feature_count = 0;
 	WGPUFeatureName polygon_mode_line = static_cast<WGPUFeatureName>(WGPUNativeFeature_PolygonModeLine);
 	if (wgpuAdapterHasFeature(adapter_result.adapter, polygon_mode_line))
 	{
-		required_features[0] = polygon_mode_line;
-		device_descriptor.requiredFeatureCount = 1;
-		device_descriptor.requiredFeatures = required_features;
+		required_features[required_feature_count++] = polygon_mode_line;
 	}
+	if (wgpuAdapterHasFeature(adapter_result.adapter, WGPUFeatureName_PrimitiveIndex))
+	{
+		required_features[required_feature_count++] = WGPUFeatureName_PrimitiveIndex;
+	}
+	if (wgpuAdapterHasFeature(adapter_result.adapter, WGPUFeatureName_IndirectFirstInstance))
+	{
+		required_features[required_feature_count++] = WGPUFeatureName_IndirectFirstInstance;
+	}
+	device_descriptor.requiredFeatureCount = required_feature_count;
+	device_descriptor.requiredFeatures = required_features;
 	wgpuAdapterRequestDevice(adapter_result.adapter, &device_descriptor, device_callback);
 
 	if (!device_result.device)
